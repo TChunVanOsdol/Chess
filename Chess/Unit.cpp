@@ -54,15 +54,8 @@ Pawn::Pawn(Board& bref, int pos, colortype col) : Unit(bref, pos, col) {
 }
 
 void Pawn::moveUnit(std::vector<Unit*> units) {
-	//Set pawn direction
-	int dir;
-	if (team == black)
-		dir = 1;
-	else if (team == white)
-		dir = -1;
-
 	if (selected == true && boardref->clickPos != position) {
-		//Check all units to see if one of them is blocking the new click position
+		//Check all units to see if one of them is on the new click position
 		bool pieceBlocked = false;
 		Unit* target = this;
 		for (Unit* u : units) {
@@ -73,6 +66,12 @@ void Pawn::moveUnit(std::vector<Unit*> units) {
 				break;
 			}
 		}
+		//Set pawn direction
+		int dir;
+		if (team == black)
+			dir = 1;
+		else if (team == white)
+			dir = -1;
 		//Pawn moves straight
 		if (pieceBlocked == false && boardref->clickPos == position + dir * boardref->tilesPerRow) {
 			position = boardref->clickPos;
@@ -118,5 +117,59 @@ Rook::Rook(Board& bref, int pos, colortype col) : Unit(bref, pos, col) {
 }
 
 void Rook::moveUnit(std::vector<Unit*> units) {
-
+	if (selected == true && boardref->clickPos != position) {
+		//Set rook direction
+		int dir;
+		//Check for positive or negative direction
+		if (boardref->clickPos > position) {
+			dir = 1;
+		}
+		else if (boardref->clickPos < position) {
+			dir = -1;
+		}
+		//Check if target and rook are in the same column
+		if (boardref->clickPos % boardref->tilesPerRow == position % boardref->tilesPerRow) {
+			dir *= boardref->tilesPerRow;
+		}
+		//Check if target is invalid
+		else if (boardref->clickPos / boardref->tilesPerRow != position / boardref->tilesPerRow) {
+			deselectUnit();
+			return;
+		}
+		//Check all units to see if any are blocking this unit, or if one is on the target space
+		bool pieceBlocked = false;
+		Unit* target = this;
+		//First, iterate each step from unit to target
+		for (int i = 1; i <= (boardref->clickPos - position) / dir; i ++) {
+			//Then search all units for a possible block
+			for (Unit* u : units) {
+				if (position + i * dir == u->position && u->alive) {
+					//If this is the clicked position, set target instead
+					if (boardref->clickPos == u->position) {
+						target = u;
+					}
+					//Otherwise, the target is blocked by another unit
+					else {
+						pieceBlocked = true;
+					}
+					break;
+				}
+			}
+		}
+		//Rook moves straight
+		if (pieceBlocked == false && (target->team != team || target == this)) {
+			position = boardref->clickPos;
+			//Eliminate enemy piece if a target was set as an enemy
+			if (target != this) {
+				target->alive = false;
+				target->position = boardref->tileCount;
+			}
+			deselectUnit();
+			hasMoved = true;
+		}
+		//Blocked move, deselect
+		else {
+			deselectUnit();
+		}
+	}
 }

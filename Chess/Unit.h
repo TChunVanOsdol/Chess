@@ -31,11 +31,16 @@ class Pawn : public Unit {
 public:
 	bool hasMoved = false;
 	Pawn(Board& bref, int pos, colortype col);
+
+private:
 	void moveUnit(std::vector<Unit*> units);
 };
 
 class Rook : public Unit {
 public:
+	bool hasMoved = false;
 	Rook(Board& bref, int pos, colortype col);
+	
+private:
 	void moveUnit(std::vector<Unit*> units);
 };
