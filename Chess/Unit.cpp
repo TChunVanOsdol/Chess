@@ -2,7 +2,8 @@
 #include "Unit.h"
 #include <iostream>
 
-Unit::Unit(Board& bref, int pos, colortype col) {
+Unit::Unit(Game& gref, Board& bref, int pos, colortype col) {
+	gameref = &gref;
 	boardref = &bref;
 	position = pos;
 	team = col;
@@ -29,7 +30,7 @@ void Unit::drawUnit(sf::RenderWindow& window) {
 
 void Unit::selectUnit() {
 	//Select unit
-	if (boardref->clickPos == position && selected == false && boardref->newClick == true) {
+	if (team == gameref->turnColor && boardref->clickPos == position && selected == false && boardref->newClick == true) {
 		selected = true;
 		selectorBox.setOutlineThickness(5.f);
 	}
@@ -45,7 +46,7 @@ void Unit::deselectUnit() {
 	selected = false;
 }
 
-Pawn::Pawn(Board& bref, int pos, colortype col) : Unit(bref, pos, col) {
+Pawn::Pawn(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
 	if (col == black)
 		unitTexture.loadFromFile("Textures/PawnB.png");
 	else if (col == white)
@@ -55,10 +56,23 @@ Pawn::Pawn(Board& bref, int pos, colortype col) : Unit(bref, pos, col) {
 
 void Pawn::moveUnit(std::vector<Unit*> units) {
 	if (selected == true && boardref->clickPos != position) {
+		//Set pawn direction
+		int dir;
+		if (team == black)
+			dir = 1;
+		else if (team == white)
+			dir = -1;
 		//Check all units to see if one of them is on the new click position
 		bool pieceBlocked = false;
+		bool enPassant = false;
 		Unit* target = this;
 		for (Unit* u : units) {
+			if (u->specialRule() == std::make_pair(1, 1) && boardref->clickPos == u->position + dir * boardref->tilesPerRow) {
+				//En passant rule check
+				enPassant = true;
+				target = u;
+				break;
+			}
 			if (boardref->clickPos == u->position && u->alive) {
 				//Location is blocked by another unit
 				pieceBlocked = true;
@@ -66,16 +80,11 @@ void Pawn::moveUnit(std::vector<Unit*> units) {
 				break;
 			}
 		}
-		//Set pawn direction
-		int dir;
-		if (team == black)
-			dir = 1;
-		else if (team == white)
-			dir = -1;
 		//Pawn moves straight
 		if (pieceBlocked == false && boardref->clickPos == position + dir * boardref->tilesPerRow) {
 			position = boardref->clickPos;
 			deselectUnit();
+			gameref->changeTurn();
 			hasMoved = true;
 		}
 		//Pawn moves 2 on first move
@@ -88,14 +97,27 @@ void Pawn::moveUnit(std::vector<Unit*> units) {
 			}
 			if (pieceBlocked == false) {
 				position = boardref->clickPos;
+				gameref->changeTurn();
 				hasMoved = true;
+				twoStepped = 2;
 			}
 			deselectUnit();
+		}
+		//En passant rule
+		else if (pieceBlocked == false && (boardref->clickPos == position + dir * boardref->tilesPerRow - 1 || boardref->clickPos == position + dir * boardref->tilesPerRow + 1) && enPassant == true) {
+			position = boardref->clickPos;
+			deselectUnit();
+			gameref->changeTurn();
+			hasMoved = true;
+			//Eliminate enemy piece
+			target->alive = false;
+			target->position = boardref->tileCount;
 		}
 		//Pawn attacks diagonally
 		else if (pieceBlocked == true && (boardref->clickPos == position + dir * boardref->tilesPerRow - 1 || boardref->clickPos == position + dir * boardref->tilesPerRow + 1) && target->team != team) {
 			position = boardref->clickPos;
 			deselectUnit();
+			gameref->changeTurn();
 			hasMoved = true;
 			//Eliminate enemy piece
 			target->alive = false;
@@ -108,7 +130,11 @@ void Pawn::moveUnit(std::vector<Unit*> units) {
 	}
 }
 
-Rook::Rook(Board& bref, int pos, colortype col) : Unit(bref, pos, col) {
+std::pair<int, int> Pawn::specialRule() {
+	return std::make_pair(twoStepped, 1);
+}
+
+Rook::Rook(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
 	if (col == black)
 		unitTexture.loadFromFile("Textures/RookB.png");
 	else if (col == white)
@@ -159,6 +185,7 @@ void Rook::moveUnit(std::vector<Unit*> units) {
 		//Rook moves straight
 		if (pieceBlocked == false && (target->team != team || target == this)) {
 			position = boardref->clickPos;
+			gameref->changeTurn();
 			//Eliminate enemy piece if a target was set as an enemy
 			if (target != this) {
 				target->alive = false;
