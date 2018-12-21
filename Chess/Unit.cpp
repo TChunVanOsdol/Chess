@@ -145,7 +145,7 @@ Rook::Rook(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, p
 void Rook::moveUnit(std::vector<Unit*> units) {
 	if (selected == true && boardref->clickPos != position) {
 		//Set rook direction
-		int dir;
+		int dir = 0;
 		//Check for positive or negative direction
 		if (boardref->clickPos > position) {
 			dir = 1;
@@ -157,7 +157,7 @@ void Rook::moveUnit(std::vector<Unit*> units) {
 		if (boardref->clickPos % boardref->tilesPerRow == position % boardref->tilesPerRow) {
 			dir *= boardref->tilesPerRow;
 		}
-		//Check if target is invalid
+		//If target was not in the same column, then also check if it is not in the same row
 		else if (boardref->clickPos / boardref->tilesPerRow != position / boardref->tilesPerRow) {
 			deselectUnit();
 			return;
@@ -192,11 +192,282 @@ void Rook::moveUnit(std::vector<Unit*> units) {
 				target->position = boardref->tileCount;
 			}
 			deselectUnit();
-			hasMoved = true;
+			hasMoved = 1;
 		}
 		//Blocked move, deselect
 		else {
 			deselectUnit();
 		}
 	}
+}
+
+std::pair<int, int> Rook::specialRule() {
+	return std::make_pair(hasMoved, 2);
+}
+
+Knight::Knight(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
+	if (col == black)
+		unitTexture.loadFromFile("Textures/KnightB.png");
+	else if (col == white)
+		unitTexture.loadFromFile("Textures/KnightW.png");
+	unitSprite.setTexture(unitTexture);
+}
+
+void Knight::moveUnit(std::vector<Unit*> units) {
+	if (selected == true && boardref->clickPos != position) {
+		//Check all units to see if any are on the target space
+		bool pieceBlocked = false;
+		Unit* target = this;
+		for (Unit* u : units) {
+			if (boardref->clickPos == u->position && u->alive) {
+				//Blocking piece is an enemy
+				if (u->team != team) {
+					target = u;
+				}
+				//Blocking piece is an ally
+				else {
+					pieceBlocked = true;
+				}
+				break;
+			}
+		}
+		//Find a valid move using a diagonal of the knight's position plus a step outwards in two directions
+		int corner = 0;
+		int dir = 0;
+		//Target above knight
+		if (boardref->clickPos / boardref->tilesPerRow < position / boardref->tilesPerRow) {
+			corner = -boardref->tilesPerRow;
+		}
+		//Target below knight
+		else if (boardref->clickPos / boardref->tilesPerRow > position / boardref->tilesPerRow) {
+			corner = boardref->tilesPerRow;
+		}
+		//Target right of knight
+		if (boardref->clickPos % boardref->tilesPerRow > position % boardref->tilesPerRow) {
+			corner++;
+			dir = 1;
+		}
+		//Target left of knight
+		else if (boardref->clickPos % boardref->tilesPerRow < position % boardref->tilesPerRow) {
+			corner--;
+			dir = -1;
+		}
+		//Move is invalid
+		if (abs(corner) != boardref->tilesPerRow + 1 && abs(corner) != boardref->tilesPerRow - 1) {
+			deselectUnit();
+		}
+		//Knight moves
+		else if (pieceBlocked == false && (target->team != team || target == this) && (boardref->clickPos == position + corner + dir || boardref->clickPos == position + 2 * corner - dir)) {
+			position = boardref->clickPos;
+			gameref->changeTurn();
+			//Eliminate enemy piece if a target was set as an enemy
+			if (target != this) {
+				target->alive = false;
+				target->position = boardref->tileCount;
+			}
+			deselectUnit();
+		}
+		//Invalid move, deselect
+		else {
+			deselectUnit();
+		}
+	}
+}
+
+Bishop::Bishop(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
+	if (col == black)
+		unitTexture.loadFromFile("Textures/BishopB.png");
+	else if (col == white)
+		unitTexture.loadFromFile("Textures/BishopW.png");
+	unitSprite.setTexture(unitTexture);
+}
+
+void Bishop::moveUnit(std::vector<Unit*> units) {
+	if (selected == true && boardref->clickPos != position) {
+		//Find distance from position
+		int x = 0;
+		int y = 0;
+		//Set x distance
+		x = boardref->clickPos % boardref->tilesPerRow - position % boardref->tilesPerRow;
+		//Set y distance
+		y = boardref->clickPos / boardref->tilesPerRow - position / boardref->tilesPerRow;
+		//Not a diagonal move; invalid
+		if (abs(x) != abs(y)) {
+			deselectUnit();
+			return;
+		}
+		//Find direction
+		int dir = 0;
+		if (y > 0) {
+			dir = boardref->tilesPerRow;
+		}
+		else if (y < 0) {
+			dir = -boardref->tilesPerRow;
+		}
+		if (x > 0) {
+			dir++;
+		}
+		else if (x < 0) {
+			dir--;
+		}
+		//Check all units to see if any are blocking this unit, or if one is on the target space
+		bool pieceBlocked = false;
+		Unit* target = this;
+		//First, iterate each step from unit to target
+		for (int i = 1; i <= (boardref->clickPos - position) / dir; i++) {
+			//Then search all units for a possible block
+			for (Unit* u : units) {
+				if (position + i * dir == u->position && u->alive) {
+					//If this is the clicked position, set target instead
+					if (boardref->clickPos == u->position) {
+						target = u;
+					}
+					//Otherwise, the target is blocked by another unit
+					else {
+						pieceBlocked = true;
+					}
+					break;
+				}
+			}
+		}
+		//Bishop moves
+		if (pieceBlocked == false && (target->team != team || target == this)) {
+			position = boardref->clickPos;
+			gameref->changeTurn();
+			//Eliminate enemy piece if a target was set as an enemy
+			if (target != this) {
+				target->alive = false;
+				target->position = boardref->tileCount;
+			}
+			deselectUnit();
+		}
+		//Invalid move, deselect
+		else {
+			deselectUnit();
+		}
+	}
+}
+
+Queen::Queen(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
+	if (col == black)
+		unitTexture.loadFromFile("Textures/QueenB.png");
+	else if (col == white)
+		unitTexture.loadFromFile("Textures/QueenW.png");
+	unitSprite.setTexture(unitTexture);
+}
+
+void Queen::moveUnit(std::vector<Unit*> units) {
+	if (selected == true && boardref->clickPos != position) {
+		//Find distance from position
+		int x = 0;
+		int y = 0;
+		//Set x distance
+		x = boardref->clickPos % boardref->tilesPerRow - position % boardref->tilesPerRow;
+		//Set y distance
+		y = boardref->clickPos / boardref->tilesPerRow - position / boardref->tilesPerRow;
+		//Not a straight or diagonal move; invalid
+		if (x * y != 0 && abs(x) != abs(y)) {
+			deselectUnit();
+			return;
+		}
+		//Find direction
+		int dir = 0;
+		if (y > 0) {
+			dir = boardref->tilesPerRow;
+		}
+		else if (y < 0) {
+			dir = -boardref->tilesPerRow;
+		}
+		if (x > 0) {
+			dir++;
+		}
+		else if (x < 0) {
+			dir--;
+		}
+		//Check all units to see if any are blocking this unit, or if one is on the target space
+		bool pieceBlocked = false;
+		Unit* target = this;
+		//First, iterate each step from unit to target
+		for (int i = 1; i <= (boardref->clickPos - position) / dir; i++) {
+			//Then search all units for a possible block
+			for (Unit* u : units) {
+				if (position + i * dir == u->position && u->alive) {
+					//If this is the clicked position, set target instead
+					if (boardref->clickPos == u->position) {
+						target = u;
+					}
+					//Otherwise, the target is blocked by another unit
+					else {
+						pieceBlocked = true;
+					}
+					break;
+				}
+			}
+		}
+		//Bishop moves
+		if (pieceBlocked == false && (target->team != team || target == this)) {
+			position = boardref->clickPos;
+			gameref->changeTurn();
+			//Eliminate enemy piece if a target was set as an enemy
+			if (target != this) {
+				target->alive = false;
+				target->position = boardref->tileCount;
+			}
+			deselectUnit();
+		}
+		//Invalid move, deselect
+		else {
+			deselectUnit();
+		}
+	}
+}
+
+King::King(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
+	if (col == black)
+		unitTexture.loadFromFile("Textures/KingB.png");
+	else if (col == white)
+		unitTexture.loadFromFile("Textures/KingW.png");
+	unitSprite.setTexture(unitTexture);
+}
+
+void King::moveUnit(std::vector<Unit*> units) {
+	if (selected == true && boardref->clickPos != position) {
+		//Check all units to see if any are on the target space
+		bool pieceBlocked = false;
+		Unit* target = this;
+		for (Unit* u : units) {
+			if (boardref->clickPos == u->position && u->alive) {
+				//Blocking piece is an enemy
+				if (u->team != team) {
+					target = u;
+				}
+				//Blocking piece is an ally
+				else {
+					pieceBlocked = true;
+				}
+				break;
+			}
+		}
+		//King moves
+		if (pieceBlocked == false && (target->team != team || target == this) &&
+			((boardref->clickPos % boardref->tilesPerRow <= position % boardref->tilesPerRow + 1 && boardref->clickPos % boardref->tilesPerRow >= position % boardref->tilesPerRow - 1) &&
+			(boardref->clickPos / boardref->tilesPerRow <= position / boardref->tilesPerRow + 1 && boardref->clickPos / boardref->tilesPerRow >= position / boardref->tilesPerRow - 1))) {
+			position = boardref->clickPos;
+			gameref->changeTurn();
+			//Eliminate enemy piece if a target was set as an enemy
+			if (target != this) {
+				target->alive = false;
+				target->position = boardref->tileCount;
+			}
+			deselectUnit();
+		}
+		//Invalid move, deselect
+		else {
+			deselectUnit();
+		}
+	}
+}
+
+std::pair<int, int> King::specialRule() {
+	return std::make_pair(hasMoved, 6);
 }

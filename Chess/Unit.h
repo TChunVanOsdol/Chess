@@ -44,18 +44,42 @@ private:
 
 class Rook : public Unit {
 public:
-	bool hasMoved = false;
+	int hasMoved = 0;
 	Rook(Game& gref, Board& bref, int pos, colortype col);
 	
 private:
 	void moveUnit(std::vector<Unit*> units);
 	//Castle move with king
-	//std::pair<int, int> specialRule();
+	std::pair<int, int> specialRule();
 };
 
 class Knight : public Unit {
 public:
-	//Knight(Board& bref, int pos, colortype col);
+	Knight(Game& gref, Board& bref, int pos, colortype col);
 private:
-	//void moveUnit(std::vector<Unit*> units);
+	void moveUnit(std::vector<Unit*> units);
+};
+
+class Bishop : public Unit {
+public:
+	Bishop(Game& gref, Board& bref, int pos, colortype col);
+private:
+	void moveUnit(std::vector<Unit*> units);
+};
+
+class Queen : public Unit {
+public:
+	Queen(Game& gref, Board& bref, int pos, colortype col);
+private:
+	void moveUnit(std::vector<Unit*> units);
+};
+
+class King : public Unit {
+public:
+	int hasMoved = 0;
+	King(Game& gref, Board& bref, int pos, colortype col);
+private:
+	void moveUnit(std::vector<Unit*> units);
+	//Castle move with rook
+	std::pair<int, int> specialRule();
 };
