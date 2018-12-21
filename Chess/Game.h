@@ -22,4 +22,5 @@ public:
 	void changeTurn();
 	void drawTurn(sf::RenderWindow &window);
 	void drawVictory(sf::RenderWindow &window);
+	bool setVictory(colortype player);
 };

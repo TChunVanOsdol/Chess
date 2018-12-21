@@ -47,6 +47,7 @@ void Unit::deselectUnit() {
 }
 
 Pawn::Pawn(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
+	unitType = 1;
 	if (col == black)
 		unitTexture.loadFromFile("Textures/PawnB.png");
 	else if (col == white)
@@ -131,10 +132,11 @@ void Pawn::moveUnit(std::vector<Unit*> units) {
 }
 
 std::pair<int, int> Pawn::specialRule() {
-	return std::make_pair(twoStepped, 1);
+	return std::make_pair(twoStepped, unitType);
 }
 
 Rook::Rook(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
+	unitType = 2;
 	if (col == black)
 		unitTexture.loadFromFile("Textures/RookB.png");
 	else if (col == white)
@@ -194,6 +196,16 @@ void Rook::moveUnit(std::vector<Unit*> units) {
 			deselectUnit();
 			hasMoved = 1;
 		}
+		//Castle move with king
+		else if (pieceBlocked == false && target->team == team && target->specialRule() == std::make_pair(0,6) && hasMoved == 0) {
+			//Move king two spaces towards rook
+			target->position -= 2 * dir;
+			//Move rook behind king
+			position = target->position + dir;
+			gameref->changeTurn();
+			deselectUnit();
+			hasMoved = 1;
+		}
 		//Blocked move, deselect
 		else {
 			deselectUnit();
@@ -202,10 +214,11 @@ void Rook::moveUnit(std::vector<Unit*> units) {
 }
 
 std::pair<int, int> Rook::specialRule() {
-	return std::make_pair(hasMoved, 2);
+	return std::make_pair(hasMoved, unitType);
 }
 
 Knight::Knight(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
+	unitType = 3;
 	if (col == black)
 		unitTexture.loadFromFile("Textures/KnightB.png");
 	else if (col == white)
@@ -275,6 +288,7 @@ void Knight::moveUnit(std::vector<Unit*> units) {
 }
 
 Bishop::Bishop(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
+	unitType = 4;
 	if (col == black)
 		unitTexture.loadFromFile("Textures/BishopB.png");
 	else if (col == white)
@@ -349,6 +363,7 @@ void Bishop::moveUnit(std::vector<Unit*> units) {
 }
 
 Queen::Queen(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
+	unitType = 5;
 	if (col == black)
 		unitTexture.loadFromFile("Textures/QueenB.png");
 	else if (col == white)
@@ -404,7 +419,7 @@ void Queen::moveUnit(std::vector<Unit*> units) {
 				}
 			}
 		}
-		//Bishop moves
+		//Queen moves
 		if (pieceBlocked == false && (target->team != team || target == this)) {
 			position = boardref->clickPos;
 			gameref->changeTurn();
@@ -423,6 +438,8 @@ void Queen::moveUnit(std::vector<Unit*> units) {
 }
 
 King::King(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
+	startPos = pos;
+	unitType = 6;
 	if (col == black)
 		unitTexture.loadFromFile("Textures/KingB.png");
 	else if (col == white)
@@ -437,8 +454,8 @@ void King::moveUnit(std::vector<Unit*> units) {
 		Unit* target = this;
 		for (Unit* u : units) {
 			if (boardref->clickPos == u->position && u->alive) {
-				//Blocking piece is an enemy
-				if (u->team != team) {
+				//Blocking piece is an enemy or castling rook
+				if (u->team != team || u->specialRule() == std::make_pair(0, 2)) {
 					target = u;
 				}
 				//Blocking piece is an ally
@@ -460,6 +477,22 @@ void King::moveUnit(std::vector<Unit*> units) {
 				target->position = boardref->tileCount;
 			}
 			deselectUnit();
+			hasMoved = 1;
+		}
+		//Castle move with king
+		else if (pieceBlocked == false && target->team == team && target->specialRule() == std::make_pair(0, 2) && hasMoved == 0) {
+			int dir = 0;
+			if (boardref->clickPos > position)
+				dir = 1;
+			else if (boardref->clickPos < position)
+				dir = -1;
+			//Move king two spaces towards rook
+			position += 2 * dir;
+			//Move rook behind king
+			target->position = position - dir;
+			gameref->changeTurn();
+			deselectUnit();
+			hasMoved = 1;
 		}
 		//Invalid move, deselect
 		else {
@@ -469,5 +502,5 @@ void King::moveUnit(std::vector<Unit*> units) {
 }
 
 std::pair<int, int> King::specialRule() {
-	return std::make_pair(hasMoved, 6);
+	return std::make_pair(hasMoved, unitType);
 }

@@ -10,6 +10,7 @@ public:
 	int position;
 	colortype team;
 	bool alive = true;
+	int unitType = 0;
 
 	sf::Sprite unitSprite;
 	sf::Texture unitTexture;
@@ -19,7 +20,7 @@ public:
 
 	Unit(Game& gref, Board& bref, int pos, colortype col);
 	void update(sf::RenderWindow& window, std::vector<Unit*> units);
-	virtual std::pair<int, int> specialRule() { return std::make_pair(0, 0); }
+	virtual std::pair<int, int> specialRule() { return std::make_pair(0, unitType); }
 
 protected:
 	void deselectUnit();
@@ -77,6 +78,7 @@ private:
 class King : public Unit {
 public:
 	int hasMoved = 0;
+	int startPos;
 	King(Game& gref, Board& bref, int pos, colortype col);
 private:
 	void moveUnit(std::vector<Unit*> units);

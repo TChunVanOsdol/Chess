@@ -45,3 +45,8 @@ void Game::drawTurn(sf::RenderWindow &window) {
 void Game::drawVictory(sf::RenderWindow &window) {
 	window.draw(victoryText);
 }
+
+bool Game::setVictory(colortype player) {
+	victoryText.setString(victoryMsg[player]);
+	return true;
+}
