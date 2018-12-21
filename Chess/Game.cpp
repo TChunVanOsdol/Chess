@@ -3,8 +3,9 @@
 #include "Game.h"
 
 Game::Game() {
-	victoryFont.loadFromFile("Assets/arial.ttf");
+	victoryFont.loadFromFile("Textures/arial.ttf");
 	victoryText.setFont(victoryFont);
+	victoryText.setPosition(200.f, 320.f);
 	victoryText.setFillColor(sf::Color::Green);
 	victoryText.setCharacterSize(60);
 	victoryMsg[0] = "Black is defeated!";
