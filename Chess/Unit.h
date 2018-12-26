@@ -18,6 +18,7 @@ public:
 	bool selected = false;
 	sf::RectangleShape selectorBox;
 
+	Unit() {}
 	Unit(Game& gref, Board& bref, int pos, colortype col);
 	void update(sf::RenderWindow& window, std::vector<Unit*> units);
 	virtual std::pair<int, int> specialRule() { return std::make_pair(0, unitType); }
@@ -35,13 +36,17 @@ class Pawn : public Unit {
 public:
 	bool hasMoved = false;
 	int twoStepped = 0;
+	Pawn() {}
 	Pawn(Game& gref, Board& bref, int pos, colortype col);
+	bool promoteCheck();
 
 private:
 	void moveUnit(std::vector<Unit*> units);
 	//En passant rule
 	std::pair<int, int> specialRule();
 };
+
+void addRook(Pawn p, std::vector<Unit*> units);
 
 class Rook : public Unit {
 public:

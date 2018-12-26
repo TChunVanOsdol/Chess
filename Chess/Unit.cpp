@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Unit.h"
-#include <iostream>
 
 Unit::Unit(Game& gref, Board& bref, int pos, colortype col) {
 	gameref = &gref;
@@ -24,13 +23,14 @@ void Unit::update(sf::RenderWindow& window, std::vector<Unit*> units) {
 void Unit::drawUnit(sf::RenderWindow& window) {
 	unitSprite.setPosition(boardref->getTilePos(position));
 	selectorBox.setPosition(boardref->getTilePos(position));
+	unitSprite.setTexture(unitTexture);
 	window.draw(selectorBox);
 	window.draw(unitSprite);
 }
 
 void Unit::selectUnit() {
 	//Select unit
-	if (team == gameref->turnColor && boardref->clickPos == position && selected == false && boardref->newClick == true) {
+	if (gameref->showPromotion == false && team == gameref->turnColor && boardref->clickPos == position && selected == false && boardref->newClick == true) {
 		selected = true;
 		selectorBox.setOutlineThickness(5.f);
 	}
@@ -131,8 +131,19 @@ void Pawn::moveUnit(std::vector<Unit*> units) {
 	}
 }
 
+bool Pawn::promoteCheck() {
+	if (alive == true && ((team == black && position >= boardref->tileCount - boardref->tilesPerRow) || (team == white && position < boardref->tilesPerRow))) {
+		return true;
+	}
+	return false;
+}
+
 std::pair<int, int> Pawn::specialRule() {
 	return std::make_pair(twoStepped, unitType);
+}
+
+void addRook(Pawn p, std::vector<Unit*> units) {
+	//units.push_back(new Rook(gref, bref, pos, col));
 }
 
 Rook::Rook(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {

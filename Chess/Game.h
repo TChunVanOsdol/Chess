@@ -14,6 +14,14 @@ public:
 	bool newTurn = true;
 	bool turnChanged = false;
 
+	bool showPromotion = false;
+	colortype promoteColor;
+	sf::RectangleShape promoteWindow;
+	sf::RectangleShape promoteOption;
+	sf::Sprite promoteSprite[4];
+	sf::Texture promoteTexture[8];
+	int promoteChosen = -1;
+
 	std::string victoryMsg[playerCount];
 	sf::Text victoryText;
 	sf::Font victoryFont;
@@ -23,4 +31,6 @@ public:
 	void drawTurn(sf::RenderWindow &window);
 	void drawVictory(sf::RenderWindow &window);
 	bool setVictory(colortype player);
+	void promoteChoice(Board &boardref, sf::RenderWindow &window);
+	void drawPromoteWindow(sf::RenderWindow &window);
 };
