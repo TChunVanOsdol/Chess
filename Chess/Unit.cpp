@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Unit.h"
 
-Unit::Unit(Game& gref, Board& bref, int pos, colortype col) {
+Unit::Unit(Game &gref, Board &bref, int pos, colortype col) {
 	gameref = &gref;
 	boardref = &bref;
 	position = pos;
@@ -14,13 +14,13 @@ Unit::Unit(Game& gref, Board& bref, int pos, colortype col) {
 	selectorBox.setPosition(bref.getTilePos(pos));
 }
 
-void Unit::update(sf::RenderWindow& window, std::vector<Unit*> units) {
+void Unit::update(sf::RenderWindow &window, std::vector<Unit*> units) {
 	drawUnit(window);
 	selectUnit();
 	moveUnit(units);
 }
 
-void Unit::drawUnit(sf::RenderWindow& window) {
+void Unit::drawUnit(sf::RenderWindow &window) {
 	unitSprite.setPosition(boardref->getTilePos(position));
 	selectorBox.setPosition(boardref->getTilePos(position));
 	unitSprite.setTexture(unitTexture);
@@ -46,7 +46,7 @@ void Unit::deselectUnit() {
 	selected = false;
 }
 
-Pawn::Pawn(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
+Pawn::Pawn(Game &gref, Board &bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
 	unitType = 1;
 	if (col == black)
 		unitTexture.loadFromFile("Textures/PawnB.png");
@@ -146,7 +146,7 @@ void addRook(Pawn p, std::vector<Unit*> units) {
 	//units.push_back(new Rook(gref, bref, pos, col));
 }
 
-Rook::Rook(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
+Rook::Rook(Game &gref, Board &bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
 	unitType = 2;
 	if (col == black)
 		unitTexture.loadFromFile("Textures/RookB.png");
@@ -228,7 +228,7 @@ std::pair<int, int> Rook::specialRule() {
 	return std::make_pair(hasMoved, unitType);
 }
 
-Knight::Knight(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
+Knight::Knight(Game &gref, Board &bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
 	unitType = 3;
 	if (col == black)
 		unitTexture.loadFromFile("Textures/KnightB.png");
@@ -298,7 +298,7 @@ void Knight::moveUnit(std::vector<Unit*> units) {
 	}
 }
 
-Bishop::Bishop(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
+Bishop::Bishop(Game &gref, Board &bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
 	unitType = 4;
 	if (col == black)
 		unitTexture.loadFromFile("Textures/BishopB.png");
@@ -373,7 +373,7 @@ void Bishop::moveUnit(std::vector<Unit*> units) {
 	}
 }
 
-Queen::Queen(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
+Queen::Queen(Game &gref, Board &bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
 	unitType = 5;
 	if (col == black)
 		unitTexture.loadFromFile("Textures/QueenB.png");
@@ -448,7 +448,7 @@ void Queen::moveUnit(std::vector<Unit*> units) {
 	}
 }
 
-King::King(Game& gref, Board& bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
+King::King(Game &gref, Board &bref, int pos, colortype col) : Unit(gref, bref, pos, col) {
 	startPos = pos;
 	unitType = 6;
 	if (col == black)

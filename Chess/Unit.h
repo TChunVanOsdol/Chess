@@ -19,15 +19,15 @@ public:
 	sf::RectangleShape selectorBox;
 
 	Unit() {}
-	Unit(Game& gref, Board& bref, int pos, colortype col);
-	void update(sf::RenderWindow& window, std::vector<Unit*> units);
+	Unit(Game &gref, Board &bref, int pos, colortype col);
+	void update(sf::RenderWindow &window, std::vector<Unit*> units);
 	virtual std::pair<int, int> specialRule() { return std::make_pair(0, unitType); }
 
 protected:
 	void deselectUnit();
 
 private:
-	void drawUnit(sf::RenderWindow& window);
+	void drawUnit(sf::RenderWindow &window);
 	void selectUnit();
 	virtual void moveUnit(std::vector<Unit*> units) = 0;
 };
@@ -37,7 +37,7 @@ public:
 	bool hasMoved = false;
 	int twoStepped = 0;
 	Pawn() {}
-	Pawn(Game& gref, Board& bref, int pos, colortype col);
+	Pawn(Game &gref, Board &bref, int pos, colortype col);
 	bool promoteCheck();
 
 private:
@@ -51,7 +51,7 @@ void addRook(Pawn p, std::vector<Unit*> units);
 class Rook : public Unit {
 public:
 	int hasMoved = 0;
-	Rook(Game& gref, Board& bref, int pos, colortype col);
+	Rook(Game &gref, Board &bref, int pos, colortype col);
 	
 private:
 	void moveUnit(std::vector<Unit*> units);
@@ -61,21 +61,21 @@ private:
 
 class Knight : public Unit {
 public:
-	Knight(Game& gref, Board& bref, int pos, colortype col);
+	Knight(Game &gref, Board &bref, int pos, colortype col);
 private:
 	void moveUnit(std::vector<Unit*> units);
 };
 
 class Bishop : public Unit {
 public:
-	Bishop(Game& gref, Board& bref, int pos, colortype col);
+	Bishop(Game &gref, Board &bref, int pos, colortype col);
 private:
 	void moveUnit(std::vector<Unit*> units);
 };
 
 class Queen : public Unit {
 public:
-	Queen(Game& gref, Board& bref, int pos, colortype col);
+	Queen(Game &gref, Board &bref, int pos, colortype col);
 private:
 	void moveUnit(std::vector<Unit*> units);
 };
@@ -84,7 +84,7 @@ class King : public Unit {
 public:
 	int hasMoved = 0;
 	int startPos;
-	King(Game& gref, Board& bref, int pos, colortype col);
+	King(Game &gref, Board &bref, int pos, colortype col);
 private:
 	void moveUnit(std::vector<Unit*> units);
 	//Castle move with rook
