@@ -67,30 +67,9 @@ void Server::collectPackets() {
 	}
 }
 
-void Server::collectPackets() {
-	if (selector.wait(sf::microseconds(10))) {
-		if (selector.isReady(listener)) {
-			//This section could be used to reconnect a player
-		}
-		//No player to reconnect, check the clients
-		else {
-			if (selector.isReady(client)) {
-				//Receive the packet
-				sf::Packet packet;
-				if (client.receive(packet) == sf::Socket::Done) {
-					//Packet received, set input string based on the current client
-					userInputs data;
-					if (packet >> data) {
-						playerInputs[1] = data;
-					}
-				}
-			}
-		}
-	}
-}
-
-void Server::serverInputs(userInputs data) {
-	playerInputs[0] = data;
+void Server::clearInputs() {
+	playerInputs[0].newClick = false;
+	playerInputs[1].newClick = false;
 }
 
 void Server::distributePackets() {
@@ -121,16 +100,18 @@ void Client::connectToHost() {
 	}
 }
 
-void Client::clientInput(userInputs data) {
-	//Build outgoing player input
-	playerInputs[1] = data;
+void Client::clearInputs() {
+	clientInputs.newClick = false;
+	playerInputs[0].newClick = false;
+	playerInputs[1].newClick = false;
 }
 
 void Client::sendPlayerPacket() {
 	sf::Packet packet;
-	packet << playerInputs[1];
+	packet << clientInputs;
 	if (socket.send(packet) != sf::Socket::Done) {
 		//Packet failed to send
+		std::cout << "packet failed to send" << std::endl;
 	}
 }
 

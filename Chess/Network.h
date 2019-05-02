@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Network.hpp>
+#include <iostream>
 
 unsigned const short port = 60000;
 
@@ -24,7 +25,7 @@ public:
 	Server();
 	void startServer();
 	void collectPackets();
-	void serverInputs(userInputs data);
+	void clearInputs();
 	void distributePackets();
 };
 
@@ -36,11 +37,12 @@ public:
 
 	bool waitingForStart = true;
 
+	userInputs clientInputs;
 	userInputs playerInputs[2];
 
 	Client() {}
 	void connectToHost();
-	void clientInput(userInputs data);
+	void clearInputs();
 	void sendPlayerPacket();
 	void receivePackets();
 };
