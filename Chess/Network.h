@@ -1,6 +1,5 @@
 #pragma once
 #include <SFML/Network.hpp>
-#include <iostream>
 
 unsigned const short port = 60000;
 

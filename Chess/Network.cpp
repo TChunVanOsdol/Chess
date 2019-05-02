@@ -111,7 +111,6 @@ void Client::sendPlayerPacket() {
 	packet << clientInputs;
 	if (socket.send(packet) != sf::Socket::Done) {
 		//Packet failed to send
-		std::cout << "packet failed to send" << std::endl;
 	}
 }
 
