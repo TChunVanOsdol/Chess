@@ -1,13 +1,16 @@
 #pragma once
 #include <SFML/Network.hpp>
 
+//Establish the port you want to use here. Any value is good, as long as it doesn't conflict with another program!
 unsigned const short port = 60000;
 
+//Keep user inputs together using a struct
 struct userInputs {
 	bool newClick;
 	int clickIndex;
 };
 
+//The packet needs its insertion and extraction operators overloaded to make using them easier.
 sf::Packet & operator <<(sf::Packet & packet, const userInputs & data);
 sf::Packet & operator >>(sf::Packet & packet, userInputs & data);
 

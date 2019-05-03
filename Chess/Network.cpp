@@ -48,7 +48,7 @@ void Server::startServer() {
 void Server::collectPackets() {
 	if (selector.wait(sf::microseconds(10))) {
 		if (selector.isReady(listener)) {
-			//This section could be used to reconnect a player
+			//This section could be used to reconnect a player!
 		}
 		//No player to reconnect, check the clients
 		else {
@@ -78,7 +78,7 @@ void Server::distributePackets() {
 		packet << playerID << playerInputs[playerID];
 		if (selector.isReady(client)) {
 			if (client.send(packet) != sf::Socket::Done) {
-				//Client not ready for packets. Did the client disconnect?
+				//Packet failed to send
 			}
 		}
 	}
@@ -116,7 +116,7 @@ void Client::sendPlayerPacket() {
 
 void Client::receivePackets() {
 	sf::Packet packet;
-	int playerID = 0;
+	int playerID;
 	userInputs data;
 	for (int i = 0; i < 2; i++) {
 		if (selector.wait(sf::microseconds(10))) {
